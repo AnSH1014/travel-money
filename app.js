@@ -1,6 +1,10 @@
-const DEFAULTS={rates:{CZK:60.61,EUR:1574.8,sourceDate:null,updatedAt:null},fees:{card:1.7,dcc:3},budget:1500000,history:[]};
+const DEFAULTS={rates:{CZK:70.35,EUR:1706.85,sourceDate:"2026-07-13",updatedAt:"기본 환율 · 07.13"},fees:{card:1.7,dcc:3},budget:1500000,history:[]};
 const KEY="travelMoneyV2";
 let state=loadState(), deferredPrompt=null;
+if((state.rates.CZK===60.61 && state.rates.EUR===1574.8) || (!state.rates.sourceDate && state.rates.updatedAt===null)){
+ state.rates={CZK:70.35,EUR:1706.85,sourceDate:"2026-07-13",updatedAt:"기본 환율 · 07.13"};
+ localStorage.setItem(KEY,JSON.stringify(state));
+}
 let reverseCurrency="CZK",restaurantCurrency="CZK",tipChoice=10,compareCurrency="CZK",activeCurrency="KRW",currencyValues={KRW:0,CZK:0,EUR:0};
 const $=id=>document.getElementById(id);
 function loadState(){try{return merge(DEFAULTS,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch{return structuredClone(DEFAULTS)}}
@@ -60,6 +64,7 @@ function renderCurrencyInputs(){
  });
  $("czkRateText").textContent=`1 CZK = ${money(rate("CZK"),2)}원`;
  $("eurRateText").textContent=`1 EUR = ${money(rate("EUR"),2)}원`;
+ if($("exchangeSaveSummary"))$("exchangeSaveSummary").textContent=`${money(Math.round(currencyValues.KRW||0))}원`;
 }
 function calcExchange(){
  const input=$({KRW:"krwInput",CZK:"czkInput",EUR:"eurInput"}[activeCurrency]);
@@ -145,7 +150,12 @@ document.querySelectorAll("[data-currency-input]").forEach(input=>{
    if(parseCurrencyInput(input.value)===0)input.select();
  });
  input.addEventListener("input",()=>{
-   setCurrencyCardActive(input.dataset.currencyInput);
+   const currency=input.dataset.currencyInput;
+   setCurrencyCardActive(currency);
+   if(currency==="KRW"){
+     const value=parseCurrencyInput(input.value);
+     input.value=formatCurrencyInput(value,"KRW");
+   }
    calcExchange();
  });
  input.addEventListener("blur",()=>{
@@ -159,6 +169,18 @@ document.querySelectorAll("[data-clear-currency]").forEach(btn=>btn.onclick=()=>
  const input=$({KRW:"krwInput",CZK:"czkInput",EUR:"eurInput"}[currency]);
  input.value="0";calcExchange();input.focus();
 });
+
+$("saveExchangeExpenseBtn").onclick=()=>{
+ const krw=Math.round(currencyValues.KRW||0);
+ if(!krw)return toast("저장할 금액을 먼저 입력하세요");
+ const inputName=$("exchangeExpenseName").value.trim();
+ const defaultNames={KRW:"원화 지출",CZK:"체코 지출",EUR:"오스트리아 지출"};
+ const activeValue=currencyValues[activeCurrency]||0;
+ const detail=`${formatCurrencyInput(activeValue,activeCurrency)} ${activeCurrency}`;
+ addHistory({name:inputName||defaultNames[activeCurrency],krw,detail});
+ $("exchangeExpenseName").value="";
+ toast(`${money(krw)}원을 예산에 저장했습니다`);
+};
 $("clearAllCurrencies").onclick=()=>{
  currencyValues={KRW:0,CZK:0,EUR:0};
  ["krwInput","czkInput","eurInput"].forEach(id=>$(id).value="0");

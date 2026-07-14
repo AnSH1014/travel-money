@@ -126,3 +126,14 @@ input,select{width:100%;border:0;outline:0;background:transparent;color:var(--in
   .editable-money input{font-size:27px}
   .currency-editor{padding:15px}
 }
+
+.exchange-save-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow-soft)}
+.exchange-save-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.exchange-save-head strong,.exchange-save-head small{display:block}
+.exchange-save-head strong{font-size:14px}
+.exchange-save-head small{margin-top:4px;color:var(--brand);font-size:17px;font-weight:850}
+.budget-link-note{flex:0 0 auto;padding:6px 9px;border-radius:999px;background:#EEF7FF;color:#3D69A8;font-size:10px;font-weight:800}
+.exchange-save-form{display:grid;grid-template-columns:1fr 78px;gap:8px;margin-bottom:8px}
+.exchange-save-form input{min-width:0;height:48px;padding:0 13px;border:1px solid var(--line);border-radius:14px;background:#F7F9FC;font-size:13px}
+.compact-save-btn{min-height:48px;box-shadow:none}
+@media(max-width:360px){.exchange-save-form{grid-template-columns:1fr}.compact-save-btn{width:100%}}
