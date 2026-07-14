@@ -6,7 +6,18 @@ const $=id=>document.getElementById(id);
 function loadState(){try{return merge(DEFAULTS,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch{return structuredClone(DEFAULTS)}}
 function merge(base,extra){return{...base,...extra,rates:{...base.rates,...(extra.rates||{})},fees:{...base.fees,...(extra.fees||{})},history:Array.isArray(extra.history)?extra.history:[]}}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
-function n(v){return Number(String(v??"").replace(/,/g,""))||0}
+function n(v){return Number(String(v??"").replace(/[^0-9.-]/g,""))||0}
+function formatInputNumber(value){
+ const raw=String(value??"").replace(/[^0-9]/g,"").replace(/^0+(?=\d)/,"");
+ return raw?Number(raw).toLocaleString("ko-KR"):"0";
+}
+function syncKrwInputState(){
+ const input=$("krwInput"),amount=n(input.value),empty=amount===0;
+ input.classList.toggle("is-empty",empty);
+ $("clearKrwInline").classList.toggle("hidden",empty);
+ $("czkResult").classList.toggle("muted-result",empty);
+ $("eurResult").classList.toggle("muted-result",empty);
+}
 function money(v,d=0){return new Intl.NumberFormat("ko-KR",{maximumFractionDigits:d,minimumFractionDigits:d}).format(v)}
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
 function setActive(group,value){document.querySelectorAll(`#${group} button`).forEach(b=>b.classList.toggle("active",b.dataset.value===String(value)))}
@@ -16,15 +27,17 @@ function syncSettings(){
  $("czkRateInput").value=state.rates.CZK;$("eurRateInput").value=state.rates.EUR;
  $("cardFeeInput").value=state.fees.card;$("dccFeeInput").value=state.fees.dcc;$("budgetInput").value=state.budget;
  $("rateStatus").textContent=state.rates.updatedAt?`최근 적용 ${state.rates.updatedAt}`:"저장 환율 사용 중";
+ if($("rateStatusInline"))$("rateStatusInline").textContent=state.rates.updatedAt?`최근 적용 ${state.rates.updatedAt}`:"저장 환율 사용 중";
 }
 function calcExchange(){
- const krw=n($("krwInput").value);
- $("czkResult").textContent=`${money(krw/rate("CZK"),0)} CZK`;
- $("eurResult").textContent=`${money(krw/rate("EUR"),2)} EUR`;
+ const input=$("krwInput"),krw=n(input.value);
+ input.value=formatInputNumber(krw);
+ $("czkResult").textContent=krw?`${money(krw/rate("CZK"),0)} CZK`:"0 CZK";
+ $("eurResult").textContent=krw?`${money(krw/rate("EUR"),2)} EUR`:"0 EUR";
  $("czkRateText").textContent=`1 CZK = ${money(rate("CZK"),2)}원`;
  $("eurRateText").textContent=`1 EUR = ${money(rate("EUR"),2)}원`;
  $("reverseResult").textContent=`약 ${money(n($("foreignInput").value)*rate(reverseCurrency))}원`;
- calcRestaurant();calcCompare();renderBudget();
+ syncKrwInputState();calcRestaurant();calcCompare();renderBudget();
 }
 function calcRestaurant(){
  const bill=n($("billInput").value),people=Math.max(1,n($("peopleInput").value));
@@ -57,7 +70,12 @@ function renderBudget(){
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 function network(){
  const online=navigator.onLine;$("networkBar").classList.toggle("offline",!online);$("networkText").textContent=online?"온라인":"오프라인";$("updateRatesBtn").disabled=!online;
- if(!online)$("rateMessage").textContent="오프라인입니다. 마지막 저장 환율로 모든 기능이 작동합니다.";
+ if($("onlineBadge")){
+   $("onlineBadge").textContent=online?"온라인":"오프라인";
+   $("onlineBadge").classList.toggle("offline",!online);
+ }
+ if(!online)$("rateMessage").textContent="오프라인입니다. 마지막 저장 환율로 계산합니다.";
+ else if(!$("rateMessage").textContent.includes("기준일"))$("rateMessage").textContent="버튼을 누를 때만 인터넷에 연결합니다.";
 }
 async function updateRates(){
  if(!navigator.onLine)return;
@@ -73,8 +91,8 @@ async function updateRates(){
  finally{b.textContent="최신 환율 적용";b.disabled=!navigator.onLine}
 }
 document.querySelectorAll(".bottom-nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".bottom-nav button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===`page-${b.dataset.page}`));scrollTo(0,0)});
-document.querySelectorAll("[data-add-krw]").forEach(b=>b.onclick=()=>{$("krwInput").value=n($("krwInput").value)+n(b.dataset.addKrw);calcExchange()});
-$("clearKrw").onclick=()=>{$("krwInput").value="";calcExchange()};
+document.querySelectorAll("[data-add-krw]").forEach(b=>b.onclick=()=>{$("krwInput").value=n($("krwInput").value)+n(b.dataset.addKrw);calcExchange();$("krwInput").focus()});
+$("clearKrw").onclick=()=>{$("krwInput").value="0";calcExchange();$("krwInput").focus()};$("clearKrwInline").onclick=()=>{$("krwInput").value="0";calcExchange();$("krwInput").focus()};
 ["krwInput","foreignInput","billInput","peopleInput","customTip","compareAmount"].forEach(id=>$(id).addEventListener("input",calcExchange));
 $("reverseCurrency").onclick=e=>{if(!e.target.dataset.value)return;reverseCurrency=e.target.dataset.value;setActive("reverseCurrency",reverseCurrency);$("foreignUnit").textContent=reverseCurrency;calcExchange()};
 $("restaurantCurrency").onclick=e=>{if(!e.target.dataset.value)return;restaurantCurrency=e.target.dataset.value;setActive("restaurantCurrency",restaurantCurrency);$("billUnit").textContent=restaurantCurrency;$("roundingSelect").value=restaurantCurrency==="CZK"?"10":"none";calcRestaurant()};
@@ -96,3 +114,6 @@ $("installBtn").onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.promp
 window.addEventListener("appinstalled",()=>toast("홈 화면에 설치했습니다"));
 syncSettings();calcExchange();network();
 if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));
+
+$("krwInput").addEventListener("focus",e=>{if(n(e.target.value)===0)e.target.select()});
+$("krwInput").addEventListener("blur",e=>{e.target.value=formatInputNumber(e.target.value);syncKrwInputState()});

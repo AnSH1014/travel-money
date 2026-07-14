@@ -16,8 +16,7 @@
   <header class="topbar">
     <div>
       <p class="eyebrow">CZECHIA · AUSTRIA</p>
-      <h1>여행 머니</h1>
-      <p class="header-copy">환율, 식당 팁, 결제 비교를 한 번에</p>
+      <h1>여행 환율</h1>
     </div>
     <button id="installBtn" class="install-btn hidden" aria-label="앱 설치">
       <span>＋</span><small>설치</small>
@@ -31,42 +30,49 @@
 
   <main>
     <section id="page-exchange" class="page active">
-      <div class="screen-title">
-        <div>
-          <span class="screen-kicker">오늘의 여행 환율</span>
-          <h2>얼마인지 바로 확인해요</h2>
-        </div>
-        <span class="screen-badge">오프라인 가능</span>
-      </div>
       <article class="hero-card premium-hero">
         <label for="krwInput">한국 원화</label>
-        <div class="money-input"><input id="krwInput" inputmode="numeric" value="100000"><span>KRW</span></div>
-        <div class="quick-row">
-          <button data-add-krw="10000">+1만</button><button data-add-krw="50000">+5만</button>
-          <button data-add-krw="100000">+10만</button><button data-add-krw="500000">+50만</button>
+        <div class="money-input krw-input-wrap main-krw-input">
+          <input id="krwInput" class="is-empty" inputmode="numeric" value="0" aria-label="한국 원화 입력">
+          <span>원</span>
+          <button id="clearKrwInline" class="clear-input hidden" type="button" aria-label="금액 지우기">×</button>
+        </div>
+        <p class="input-helper">금액을 입력하면 두 통화가 바로 계산됩니다.</p>
+        <div class="quick-row compact-quick">
+          <button data-add-krw="10000">+1만</button>
+          <button data-add-krw="50000">+5만</button>
+          <button data-add-krw="100000">+10만</button>
+          <button data-add-krw="500000">+50만</button>
           <button id="clearKrw">초기화</button>
         </div>
       </article>
 
-      <div class="currency-grid">
+      <div class="currency-grid main-results">
         <article class="currency-card czk">
           <div class="flag-line"><span>🇨🇿</span><div><strong>체코 코루나</strong><small>CZK</small></div></div>
-          <p id="czkResult" class="big-value">–</p><small id="czkRateText"></small>
+          <p id="czkResult" class="big-value muted-result">0 CZK</p>
+          <small id="czkRateText"></small>
         </article>
         <article class="currency-card eur">
           <div class="flag-line"><span>🇦🇹</span><div><strong>오스트리아 유로</strong><small>EUR</small></div></div>
-          <p id="eurResult" class="big-value">–</p><small id="eurRateText"></small>
+          <p id="eurResult" class="big-value muted-result">0 EUR</p>
+          <small id="eurRateText"></small>
         </article>
       </div>
 
-      <article class="card">
-        <div class="section-head"><div><h2>환율 업데이트</h2><p>자동 연결하지 않고 버튼을 누를 때만 조회합니다.</p></div></div>
-        <button id="updateRatesBtn" class="primary-btn"><span class="btn-icon">↻</span>최신 환율 적용</button>
-        <p id="rateMessage" class="helper">오프라인에서는 마지막 저장 환율로 계속 계산됩니다.</p>
+      <article class="rate-card">
+        <div class="rate-card-top">
+          <div>
+            <strong>적용 환율</strong>
+            <small id="rateStatusInline">저장 환율 사용 중</small>
+          </div>
+          <span id="onlineBadge" class="online-badge">온라인</span>
+        </div>
+        <button id="updateRatesBtn" class="secondary-btn refresh-btn"><span class="btn-icon">↻</span>최신 환율 적용</button>
+        <p id="rateMessage" class="helper">버튼을 누를 때만 인터넷에 연결합니다.</p>
       </article>
 
-      <article class="card">
-        <div class="section-head"><div><h2>외화 → 원화</h2><p>가격표를 보고 바로 원화로 확인합니다.</p></div></div>
+      <article class="card utility-hidden" aria-hidden="true">
         <div class="segmented" id="reverseCurrency">
           <button class="active" data-value="CZK">CZK</button><button data-value="EUR">EUR</button>
         </div>
@@ -109,7 +115,7 @@
       </article>
     </section>
 
-    <section id="page-compare" class="page">
+    <section id="page-compare" class="page utility-hidden" aria-hidden="true">
       <article class="card">
         <div class="section-head"><div><h2>결제 방법 비교</h2><p>현금과 카드의 예상 원화 금액을 비교합니다.</p></div></div>
         <div class="segmented" id="compareCurrency">
@@ -177,10 +183,9 @@
   </main>
 </div>
 
-<nav class="bottom-nav">
+<nav class="bottom-nav four-tabs">
   <button class="active" data-page="exchange"><span class="nav-icon">₩</span>환율</button>
   <button data-page="restaurant"><span class="nav-icon">⌁</span>식당</button>
-  <button data-page="compare"><span class="nav-icon">⇄</span>비교</button>
   <button data-page="budget"><span class="nav-icon">▥</span>예산</button>
   <button data-page="settings"><span class="nav-icon">●</span>설정</button>
 </nav>
