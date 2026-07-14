@@ -1,0 +1,26 @@
+{
+  "name": "여행 머니 - 체코·오스트리아 환율 계산기",
+  "short_name": "여행 머니",
+  "description": "오프라인 환율, 팁, 결제 비교, 여행 예산 계산기",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F5F7FB",
+  "theme_color": "#246BFD",
+  "orientation": "portrait",
+  "lang": "ko-KR",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

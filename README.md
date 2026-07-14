@@ -1,2 +1,51 @@
-# travel-money
-체코, 오스트리아 여행 시 활용할 환전앱
+# 여행 머니 PWA v2
+
+체코(CZK)와 오스트리아(EUR) 여행용 모바일 웹앱입니다.
+
+## 포함 기능
+- 원화 → CZK/EUR 및 외화 → 원화 계산
+- 사용자가 버튼을 눌렀을 때만 최신 환율 API 호출
+- 마지막 환율과 모든 설정을 브라우저에 저장
+- 오프라인 실행
+- 식당 팁, 서비스 요금, 인원수, 반올림 계산
+- 현금·카드·DCC 예상 금액 비교
+- 여행 예산과 최근 지출 기록
+- 홈 화면 설치(PWA)
+
+## 가장 쉬운 배포: GitHub Pages
+1. GitHub에서 새 저장소를 만들고 Public으로 설정합니다.
+2. 이 폴더 안의 파일과 `icons` 폴더를 저장소 최상위에 업로드합니다.
+3. 저장소 `Settings → Pages`로 이동합니다.
+4. `Build and deployment → Source`를 `Deploy from a branch`로 선택합니다.
+5. Branch를 `main`, Folder를 `/(root)`로 선택하고 Save를 누릅니다.
+6. 표시되는 `https://사용자명.github.io/저장소명/` 주소를 휴대폰 Chrome에서 엽니다.
+7. 첫 실행 뒤 인터넷을 끄고 다시 열어 오프라인 작동을 확인합니다.
+
+## 노트북에서 임시 확인
+터미널에서 이 폴더로 이동한 뒤:
+- Windows: `py -m http.server 8000`
+- macOS/Linux: `python3 -m http.server 8000`
+
+노트북에서는 `http://localhost:8000`으로 확인할 수 있습니다.
+휴대폰에서 같은 Wi-Fi로 접속하는 로컬 주소는 일반 HTTP이므로 화면 확인은 가능하지만, 서비스 워커와 설치 기능은 제한될 수 있습니다. 최종 사용은 HTTPS인 GitHub Pages를 권장합니다.
+
+## 환율
+Frankfurter API v1을 사용합니다.
+`https://api.frankfurter.dev/v1/latest?base=KRW&symbols=CZK,EUR`
+
+API는 최신 영업일 기준 환율이며 실제 카드 청구액이나 환전소 환율과 다를 수 있습니다.
+
+
+## 모바일 UI 개선
+- 큰 터치 영역과 숫자 중심 입력
+- 하단 고정 탭
+- 작은 화면에서 카드 세로 전환
+- 노치·하단 안전 영역 대응
+
+
+## 프리미엄 모바일 UI
+- 토스형 여백과 카드 구조
+- 결과 금액 우선 배치
+- 하단 탭 아이콘 체계 통일
+- 더 큰 입력·버튼·상태 표현
+- 서비스 워커 캐시 버전 갱신
