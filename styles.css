@@ -105,3 +105,24 @@ input,select{width:100%;border:0;outline:0;background:transparent;color:var(--in
   .main-results .currency-card{min-height:145px}
   .main-results .big-value{font-size:25px}
 }
+
+.currency-editor{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:17px 18px;margin-bottom:11px;box-shadow:var(--shadow-soft);transition:border-color .18s,box-shadow .18s,transform .18s}
+.currency-editor.active-currency{border-color:#8FB0FF;box-shadow:0 0 0 4px rgba(47,107,255,.08),var(--shadow)}
+.currency-editor-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.editing-badge{display:none;padding:6px 9px;border-radius:999px;background:var(--brand-soft);color:var(--brand);font-size:10px;font-weight:800}
+.currency-editor.active-currency .editing-badge{display:inline-flex}
+.editable-money{position:relative;display:flex;align-items:center;min-height:62px;padding:0 46px 0 0;border-bottom:1px solid var(--line)}
+.editable-money input{width:100%;padding:10px 8px 10px 0;border:0;outline:0;background:transparent;color:var(--ink);font-size:31px;font-weight:850;letter-spacing:-.04em}
+.editable-money input.is-empty{color:#A8B0BE}
+.editable-money>span{flex:0 0 auto;color:#667085;font-size:13px;font-weight:800}
+.clear-currency{position:absolute;right:0;width:32px;height:32px;border:0;border-radius:50%;background:#EEF2F7;color:#7A8596;font-size:19px;display:grid;place-items:center}
+.rate-note{display:block;margin-top:8px;color:var(--muted);font-size:10px}
+.quick-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:15px 16px;margin-bottom:12px;box-shadow:var(--shadow-soft)}
+.quick-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.quick-card-head strong{font-size:13px}
+.text-clear{border:0;background:transparent;color:#7A8596;font-size:11px;font-weight:700}
+.compact-quick button{min-width:68px}
+@media(max-width:380px){
+  .editable-money input{font-size:27px}
+  .currency-editor{padding:15px}
+}

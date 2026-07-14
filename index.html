@@ -30,35 +30,51 @@
 
   <main>
     <section id="page-exchange" class="page active">
-      <article class="hero-card premium-hero">
-        <label for="krwInput">한국 원화</label>
-        <div class="money-input krw-input-wrap main-krw-input">
-          <input id="krwInput" class="is-empty" inputmode="numeric" value="0" aria-label="한국 원화 입력">
-          <span>원</span>
-          <button id="clearKrwInline" class="clear-input hidden" type="button" aria-label="금액 지우기">×</button>
+      <article class="currency-editor active-currency" data-currency-card="KRW">
+        <div class="currency-editor-head">
+          <div class="flag-line"><span>🇰🇷</span><div><strong>한국 원화</strong><small>KRW</small></div></div>
+          <span class="editing-badge">입력 중</span>
         </div>
-        <p class="input-helper">금액을 입력하면 두 통화가 바로 계산됩니다.</p>
-        <div class="quick-row compact-quick">
-          <button data-add-krw="10000">+1만</button>
-          <button data-add-krw="50000">+5만</button>
-          <button data-add-krw="100000">+10만</button>
-          <button data-add-krw="500000">+50만</button>
-          <button id="clearKrw">초기화</button>
+        <div class="editable-money">
+          <input id="krwInput" class="currency-input is-empty" inputmode="numeric" value="0" data-currency-input="KRW" aria-label="한국 원화 입력">
+          <span>원</span>
+          <button class="clear-currency hidden" type="button" data-clear-currency="KRW" aria-label="원화 지우기">×</button>
         </div>
       </article>
 
-      <div class="currency-grid main-results">
-        <article class="currency-card czk">
+      <article class="currency-editor" data-currency-card="CZK">
+        <div class="currency-editor-head">
           <div class="flag-line"><span>🇨🇿</span><div><strong>체코 코루나</strong><small>CZK</small></div></div>
-          <p id="czkResult" class="big-value muted-result">0 CZK</p>
-          <small id="czkRateText"></small>
-        </article>
-        <article class="currency-card eur">
+          <span class="editing-badge">입력 중</span>
+        </div>
+        <div class="editable-money">
+          <input id="czkInput" class="currency-input is-empty" inputmode="decimal" value="0" data-currency-input="CZK" aria-label="체코 코루나 입력">
+          <span>CZK</span>
+          <button class="clear-currency hidden" type="button" data-clear-currency="CZK" aria-label="체코 코루나 지우기">×</button>
+        </div>
+        <small id="czkRateText" class="rate-note"></small>
+      </article>
+
+      <article class="currency-editor" data-currency-card="EUR">
+        <div class="currency-editor-head">
           <div class="flag-line"><span>🇦🇹</span><div><strong>오스트리아 유로</strong><small>EUR</small></div></div>
-          <p id="eurResult" class="big-value muted-result">0 EUR</p>
-          <small id="eurRateText"></small>
-        </article>
-      </div>
+          <span class="editing-badge">입력 중</span>
+        </div>
+        <div class="editable-money">
+          <input id="eurInput" class="currency-input is-empty" inputmode="decimal" value="0" data-currency-input="EUR" aria-label="유로 입력">
+          <span>EUR</span>
+          <button class="clear-currency hidden" type="button" data-clear-currency="EUR" aria-label="유로 지우기">×</button>
+        </div>
+        <small id="eurRateText" class="rate-note"></small>
+      </article>
+
+      <article class="quick-card">
+        <div class="quick-card-head">
+          <strong id="quickTitle">원화 빠른 입력</strong>
+          <button id="clearAllCurrencies" class="text-clear" type="button">전체 초기화</button>
+        </div>
+        <div id="dynamicQuickButtons" class="quick-row compact-quick"></div>
+      </article>
 
       <article class="rate-card">
         <div class="rate-card-top">

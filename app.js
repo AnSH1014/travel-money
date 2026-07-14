@@ -1,7 +1,7 @@
 const DEFAULTS={rates:{CZK:60.61,EUR:1574.8,sourceDate:null,updatedAt:null},fees:{card:1.7,dcc:3},budget:1500000,history:[]};
 const KEY="travelMoneyV2";
 let state=loadState(), deferredPrompt=null;
-let reverseCurrency="CZK",restaurantCurrency="CZK",tipChoice=10,compareCurrency="CZK";
+let reverseCurrency="CZK",restaurantCurrency="CZK",tipChoice=10,compareCurrency="CZK",activeCurrency="KRW",currencyValues={KRW:0,CZK:0,EUR:0};
 const $=id=>document.getElementById(id);
 function loadState(){try{return merge(DEFAULTS,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch{return structuredClone(DEFAULTS)}}
 function merge(base,extra){return{...base,...extra,rates:{...base.rates,...(extra.rates||{})},fees:{...base.fees,...(extra.fees||{})},history:Array.isArray(extra.history)?extra.history:[]}}
@@ -29,15 +29,61 @@ function syncSettings(){
  $("rateStatus").textContent=state.rates.updatedAt?`최근 적용 ${state.rates.updatedAt}`:"저장 환율 사용 중";
  if($("rateStatusInline"))$("rateStatusInline").textContent=state.rates.updatedAt?`최근 적용 ${state.rates.updatedAt}`:"저장 환율 사용 중";
 }
-function calcExchange(){
- const input=$("krwInput"),krw=n(input.value);
- input.value=formatInputNumber(krw);
- $("czkResult").textContent=krw?`${money(krw/rate("CZK"),0)} CZK`:"0 CZK";
- $("eurResult").textContent=krw?`${money(krw/rate("EUR"),2)} EUR`:"0 EUR";
+function currencyDigits(currency){return currency==="EUR"?2:0}
+function parseCurrencyInput(value){
+ return Number(String(value??"").replace(/[^0-9.]/g,""))||0;
+}
+function formatCurrencyInput(value,currency){
+ if(!value)return "0";
+ const digits=currencyDigits(currency);
+ return new Intl.NumberFormat("ko-KR",{maximumFractionDigits:digits,minimumFractionDigits:0}).format(value);
+}
+function setCurrencyCardActive(currency){
+ activeCurrency=currency;
+ document.querySelectorAll("[data-currency-card]").forEach(card=>card.classList.toggle("active-currency",card.dataset.currencyCard===currency));
+ renderQuickButtons();
+}
+function convertFrom(currency,value){
+ const krw=currency==="KRW"?value:currency==="CZK"?value*rate("CZK"):value*rate("EUR");
+ currencyValues.KRW=krw;
+ currencyValues.CZK=krw/rate("CZK");
+ currencyValues.EUR=krw/rate("EUR");
+}
+function renderCurrencyInputs(){
+ ["KRW","CZK","EUR"].forEach(currency=>{
+   const input=$({KRW:"krwInput",CZK:"czkInput",EUR:"eurInput"}[currency]);
+   const value=currencyValues[currency]||0;
+   if(document.activeElement!==input || currency!==activeCurrency)input.value=formatCurrencyInput(value,currency);
+   input.classList.toggle("is-empty",value===0);
+   const clearBtn=document.querySelector(`[data-clear-currency="${currency}"]`);
+   if(clearBtn)clearBtn.classList.toggle("hidden",value===0);
+ });
  $("czkRateText").textContent=`1 CZK = ${money(rate("CZK"),2)}원`;
  $("eurRateText").textContent=`1 EUR = ${money(rate("EUR"),2)}원`;
+}
+function calcExchange(){
+ const input=$({KRW:"krwInput",CZK:"czkInput",EUR:"eurInput"}[activeCurrency]);
+ const value=parseCurrencyInput(input?.value);
+ convertFrom(activeCurrency,value);
+ renderCurrencyInputs();
  $("reverseResult").textContent=`약 ${money(n($("foreignInput").value)*rate(reverseCurrency))}원`;
- syncKrwInputState();calcRestaurant();calcCompare();renderBudget();
+ calcRestaurant();calcCompare();renderBudget();
+}
+function renderQuickButtons(){
+ const configs={
+   KRW:{title:"원화 빠른 입력",items:[[10000,"+1만"],[50000,"+5만"],[100000,"+10만"],[500000,"+50만"]]},
+   CZK:{title:"코루나 빠른 입력",items:[[100,"+100"],[500,"+500"],[1000,"+1,000"],[5000,"+5,000"]]},
+   EUR:{title:"유로 빠른 입력",items:[[5,"+5"],[10,"+10"],[20,"+20"],[50,"+50"]]}
+ };
+ const config=configs[activeCurrency];
+ $("quickTitle").textContent=config.title;
+ $("dynamicQuickButtons").innerHTML=config.items.map(([value,label])=>`<button type="button" data-quick-value="${value}">${label}</button>`).join("");
+ document.querySelectorAll("[data-quick-value]").forEach(btn=>btn.onclick=()=>{
+   const id={KRW:"krwInput",CZK:"czkInput",EUR:"eurInput"}[activeCurrency],input=$(id);
+   const next=parseCurrencyInput(input.value)+Number(btn.dataset.quickValue);
+   input.value=formatCurrencyInput(next,activeCurrency);
+   calcExchange();input.focus();
+ });
 }
 function calcRestaurant(){
  const bill=n($("billInput").value),people=Math.max(1,n($("peopleInput").value));
@@ -91,9 +137,34 @@ async function updateRates(){
  finally{b.textContent="최신 환율 적용";b.disabled=!navigator.onLine}
 }
 document.querySelectorAll(".bottom-nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".bottom-nav button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===`page-${b.dataset.page}`));scrollTo(0,0)});
-document.querySelectorAll("[data-add-krw]").forEach(b=>b.onclick=()=>{$("krwInput").value=n($("krwInput").value)+n(b.dataset.addKrw);calcExchange();$("krwInput").focus()});
-$("clearKrw").onclick=()=>{$("krwInput").value="0";calcExchange();$("krwInput").focus()};$("clearKrwInline").onclick=()=>{$("krwInput").value="0";calcExchange();$("krwInput").focus()};
-["krwInput","foreignInput","billInput","peopleInput","customTip","compareAmount"].forEach(id=>$(id).addEventListener("input",calcExchange));
+["foreignInput","billInput","peopleInput","customTip","compareAmount"].forEach(id=>$(id).addEventListener("input",calcExchange));
+
+document.querySelectorAll("[data-currency-input]").forEach(input=>{
+ input.addEventListener("focus",()=>{
+   setCurrencyCardActive(input.dataset.currencyInput);
+   if(parseCurrencyInput(input.value)===0)input.select();
+ });
+ input.addEventListener("input",()=>{
+   setCurrencyCardActive(input.dataset.currencyInput);
+   calcExchange();
+ });
+ input.addEventListener("blur",()=>{
+   const currency=input.dataset.currencyInput;
+   input.value=formatCurrencyInput(currencyValues[currency],currency);
+ });
+});
+document.querySelectorAll("[data-clear-currency]").forEach(btn=>btn.onclick=()=>{
+ const currency=btn.dataset.clearCurrency;
+ setCurrencyCardActive(currency);
+ const input=$({KRW:"krwInput",CZK:"czkInput",EUR:"eurInput"}[currency]);
+ input.value="0";calcExchange();input.focus();
+});
+$("clearAllCurrencies").onclick=()=>{
+ currencyValues={KRW:0,CZK:0,EUR:0};
+ ["krwInput","czkInput","eurInput"].forEach(id=>$(id).value="0");
+ renderCurrencyInputs();
+};
+renderQuickButtons();
 $("reverseCurrency").onclick=e=>{if(!e.target.dataset.value)return;reverseCurrency=e.target.dataset.value;setActive("reverseCurrency",reverseCurrency);$("foreignUnit").textContent=reverseCurrency;calcExchange()};
 $("restaurantCurrency").onclick=e=>{if(!e.target.dataset.value)return;restaurantCurrency=e.target.dataset.value;setActive("restaurantCurrency",restaurantCurrency);$("billUnit").textContent=restaurantCurrency;$("roundingSelect").value=restaurantCurrency==="CZK"?"10":"none";calcRestaurant()};
 $("tipOptions").onclick=e=>{if(!e.target.dataset.value)return;tipChoice=e.target.dataset.value;setActive("tipOptions",tipChoice);$("customTipWrap").classList.toggle("hidden",tipChoice!=="custom");calcRestaurant()};
@@ -115,5 +186,3 @@ window.addEventListener("appinstalled",()=>toast("홈 화면에 설치했습니�
 syncSettings();calcExchange();network();
 if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));
 
-$("krwInput").addEventListener("focus",e=>{if(n(e.target.value)===0)e.target.select()});
-$("krwInput").addEventListener("blur",e=>{e.target.value=formatInputNumber(e.target.value);syncKrwInputState()});
